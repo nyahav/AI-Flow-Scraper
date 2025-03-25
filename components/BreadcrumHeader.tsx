@@ -8,6 +8,7 @@ import { Breadcrumb,
     BreadcrumbSeparator,
  } from './ui/breadcrumb'
 
+
 function BreadcrumHeader() {
     const pathName = usePathname()
     const paths = pathName ==="/"? [""]:pathName.split("/")
