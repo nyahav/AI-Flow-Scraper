@@ -7,7 +7,7 @@ import { WorkFlowStatus } from '@/types/workflow'
 import { WorkFlow } from '@prisma/client'
 import { FileTextIcon, MoreVerticalIcon, PlayIcon, ShuffleIcon, TrashIcon } from 'lucide-react'
 import Link from 'next/link'
-import React from 'react'
+import React, { useState } from 'react'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -16,8 +16,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { TooltipArrow } from '@radix-ui/react-tooltip'
 import TooltipWrapper from './TooltipWrapper'
+import DeleteWorkflowDialog from './DeleteWorkflow'
 
 const statusColors: Partial<Record<WorkFlowStatus, string>> = {
     [WorkFlowStatus.DRAFT]: "bg-yellow-400 text-yellow-600",
@@ -60,15 +60,19 @@ function WorkFlowCard({ workflow }: { workflow: WorkFlow }) {
                         <ShuffleIcon size={16} />
                         Edit
                     </Link>
-                    <WorkflowActions />
+                    <WorkflowActions workFlowName={workflow.name}/>
                 </div>
             </CardContent>
         </Card>
     )
 }
 
-function WorkflowActions(){
-    return <DropdownMenu>
+function WorkflowActions({workFlowName}:{workFlowName:string}){
+    const [showDeleteDialog,setShowDeleteDialog] = useState(false);
+
+    return <>
+    <DeleteWorkflowDialog open={showDeleteDialog} setOpen={setShowDeleteDialog} worflowname={workFlowName}/>
+    <DropdownMenu>
         <DropdownMenuTrigger asChild>
             <Button variant={"outline"} size={"sm"}>
                 <TooltipWrapper content={"More actions"}>
@@ -82,12 +86,15 @@ function WorkflowActions(){
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
         
         <DropdownMenuSeparator/>
-        <DropdownMenuItem className='text-destructive flex items-center gap-2'>
+        <DropdownMenuItem className='text-destructive flex items-center gap-2' onSelect={()=> {
+            setShowDeleteDialog((prev) => !prev)
+        }}>
             <TrashIcon size={16} />
             Delete
         </DropdownMenuItem>
         </DropdownMenuContent>
     </DropdownMenu>
+    </>
 }
 
 export default WorkFlowCard
