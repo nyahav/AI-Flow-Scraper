@@ -114,7 +114,7 @@ function CreateWorkflowDialog({triggerText}:{triggerText?: string}) {
                                 </FormControl>
                                 <FormDescription>
                                     Provide a bried description of what your workflow does.
-                                    <br/>This is optional, but can help you remember the worflow&apos;s purpose
+                                    <br/>This is optional, but can help you remember the workflow&apos;s purpose
                                 </FormDescription>
                             </FormItem>
                         )}

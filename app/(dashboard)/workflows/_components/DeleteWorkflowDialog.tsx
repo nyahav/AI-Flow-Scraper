@@ -26,16 +26,16 @@ interface Props {
     workflowId: string,
 }
 
-function DeleteWorkflowDialog({ open, setOpen, worflowname,workflowId }: Props) {
+function DeleteWorkflowDialog({ open, setOpen, worflowname, workflowId }: Props) {
     const [confirmText, setconfirmText] = useState("");
     const deleteMutation = useMutation({
         mutationFn: DeleteWorkflow,
         onSuccess: () => {
-            toast.success("workflow deleted successfully",{id:workflowId})
+            toast.success("workflow deleted successfully", { id: workflowId })
             setconfirmText("")
         },
         onError: () => {
-            toast.error("workflow delete unsuccessfully",{id:workflowId})
+            toast.error("workflow delete unsuccessfully", { id: workflowId })
         },
     })
     return (
@@ -61,16 +61,15 @@ function DeleteWorkflowDialog({ open, setOpen, worflowname,workflowId }: Props) 
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction 
-                    disabled={confirmText!==worflowname || deleteMutation.isPending} 
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    onClick={(e) => {
-                        e.stopPropagation()
-                        toast.loading("Deleting workflow...",{id:workflowId})
-                        deleteMutation.mutate(workflowId)
-                    }}
+                    <AlertDialogAction
+                        disabled={confirmText !== worflowname || deleteMutation.isPending}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        onClick={() => {
+                            toast.loading("Deleting workflow...", { id: workflowId })
+                            deleteMutation.mutate(workflowId)
+                        }}
                     >
-                    Delete</AlertDialogAction>
+                        Delete</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

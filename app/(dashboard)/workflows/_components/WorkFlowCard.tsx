@@ -17,7 +17,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import TooltipWrapper from './TooltipWrapper'
-import DeleteWorkflowDialog from './DeleteWorkflow'
+import DeleteWorkflowDialog from './DeleteWorkflowDialog'
 
 const statusColors: Partial<Record<WorkFlowStatus, string>> = {
     [WorkFlowStatus.DRAFT]: "bg-yellow-400 text-yellow-600",
@@ -60,18 +60,23 @@ function WorkFlowCard({ workflow }: { workflow: WorkFlow }) {
                         <ShuffleIcon size={16} />
                         Edit
                     </Link>
-                    <WorkflowActions workFlowName={workflow.name}/>
+                    <WorkflowActions workFlowName={workflow.name} worflowId={workflow.id}/>
                 </div>
             </CardContent>
         </Card>
     )
 }
 
-function WorkflowActions({workFlowName}:{workFlowName:string}){
+function WorkflowActions({workFlowName,worflowId}:{workFlowName:string,worflowId:string}){
     const [showDeleteDialog,setShowDeleteDialog] = useState(false);
 
     return <>
-    <DeleteWorkflowDialog open={showDeleteDialog} setOpen={setShowDeleteDialog} worflowname={workFlowName}/>
+    <DeleteWorkflowDialog 
+    open={showDeleteDialog} 
+    setOpen={setShowDeleteDialog} 
+    worflowname={workFlowName}  
+    workflowId={worflowId}
+    />
     <DropdownMenu>
         <DropdownMenuTrigger asChild>
             <Button variant={"outline"} size={"sm"}>
