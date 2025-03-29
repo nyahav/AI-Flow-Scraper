@@ -22,11 +22,11 @@ import { toast } from "sonner";
 interface Props {
     open: boolean,
     setOpen: (open: boolean) => void,
-    worflowname: string,
+    workflowname: string,
     workflowId: string,
 }
 
-function DeleteWorkflowDialog({ open, setOpen, worflowname, workflowId }: Props) {
+function DeleteWorkflowDialog({ open, setOpen, workflowname, workflowId }: Props) {
     const [confirmText, setconfirmText] = useState("");
     const deleteMutation = useMutation({
         mutationFn: DeleteWorkflow,
@@ -55,14 +55,14 @@ function DeleteWorkflowDialog({ open, setOpen, worflowname, workflowId }: Props)
                         If you delete this workflow,you will not be able to recover it.
                     </AlertDialogDescription>
                     <div className="flex flex-col py-4 gap-2">
-                        <p>If you are sure,enter <b>{worflowname}</b> to confirm: </p>
+                        <p>If you are sure,enter <b>{workflowname}</b> to confirm: </p>
                         <Input value={confirmText} onChange={(e) => setconfirmText(e.target.value)} />
                     </div>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
-                        disabled={confirmText !== worflowname || deleteMutation.isPending}
+                        disabled={confirmText !== workflowname || deleteMutation.isPending}
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         onClick={() => {
                             toast.loading("Deleting workflow...", { id: workflowId })

@@ -10,11 +10,8 @@ function NodeParamField({ param, nodeId }: { param: TaskParams, nodeId: string }
     const { updateNodeData, getNode } = useReactFlow()
 
     const node = getNode(nodeId) as AppNode
-    console.log("@nodeId", nodeId); // Log the nodeId
-    console.log("@node", node); // Log the node object
     const value = node?.data.inputs?.[param.name];
-    console.log("@value", value); // Log the value
-
+    
     const updateNodeParamValue = useCallback((newValue: string) => {
         updateNodeData(nodeId, {
             inputs: {

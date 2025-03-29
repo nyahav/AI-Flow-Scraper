@@ -25,9 +25,8 @@ function SaveBtn({workflowId}:{workflowId:string}) {
             toast.error("Missing workflow ID", { id: "save-workflow" });
             return;
         }
-    
+        
         const workflowDefinition = JSON.stringify(toObject());
-        console.log("Serialized Workflow:", workflowDefinition); // Debugging log
         toast.loading("Saving workflow...", { id: "save-workflow" });
     
         saveMutation.mutate({
@@ -37,7 +36,7 @@ function SaveBtn({workflowId}:{workflowId:string}) {
     };
     return (
         <Button 
-            variant="outline" 
+            variant={"outline" }
             className="flex items-center gap-2"
             onClick={handleSave}
             disabled={saveMutation.isPending}

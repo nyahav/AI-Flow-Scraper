@@ -16,7 +16,6 @@ function StringParam({ param, value, updateNodeParamValue }: ParamProps) {
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
-        console.log("Input value on blur:", newValue); // Debugging log
         updateNodeParamValue(newValue);
     };
 
