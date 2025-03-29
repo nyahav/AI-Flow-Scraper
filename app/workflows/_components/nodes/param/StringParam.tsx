@@ -2,13 +2,22 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { ParamProps } from "@/types/appNode";
-import React, { useId, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 
-function StringParam({ param, value, updateNodeParamValue }: ParamProps) {
+function StringParam({ param, value, updateNodeParamValue ,disabled}: ParamProps) {
     const [intervalValue, setIntervalValue] = useState(value ?? "");
     const id = useId();
 
+    useEffect(() => {
+        setIntervalValue(value)
+    },[value])
+
+    let Component : any = Input ;
+    if(param.variant === 'textarea'){
+        Component = Textarea
+    }
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
         setIntervalValue(newValue);
@@ -25,8 +34,9 @@ function StringParam({ param, value, updateNodeParamValue }: ParamProps) {
                 {param.name}
                 {param.required && <p className="text-red-400 px-2">*</p>}
             </Label>
-            <Input
+            <Component
                 id={id}
+                disabled={disabled}
                 className="text-xs"
                 value={intervalValue}
                 placeholder="Enter value here"
