@@ -10,9 +10,10 @@ export function NodeInputs({ children }: { children: ReactNode }) {
     </div>
 }
 
-export function NodeInput({ input }: { input: TaskParams }) {
+export function NodeInput({ input ,nodeId}: { input: TaskParams ,nodeId:string}) {
+    console.log("NodeInput-nodeId",nodeId)
     return <div className="flex justify-start relative p-3 bg-secondary w-full">
-        <NodeParamField param={input}/>
+        <NodeParamField param={input} nodeId={nodeId}/>
         {!input.hideHandle &&( 
         <Handle 
         id={input.name} 

@@ -1,5 +1,4 @@
 "use client"
-import { Input } from '@/components/ui/input'
 import { TaskParams, TaskParamType } from '@/types/task'
 import React, { useCallback } from 'react'
 import StringParam from './param/StringParam'
@@ -8,22 +7,24 @@ import { AppNode } from '@/types/appNode'
 
 function NodeParamField({ param, nodeId }: { param: TaskParams, nodeId: string }) {
 
-    const {updateNodeData,getNode} = useReactFlow()
+    const { updateNodeData, getNode } = useReactFlow()
+
     const node = getNode(nodeId) as AppNode
-    const value = node?.data.inputs?.[param.name]
-    console.log("@value",value)
+    console.log("@nodeId", nodeId); // Log the nodeId
+    console.log("@node", node); // Log the node object
+    const value = node?.data.inputs?.[param.name];
+    console.log("@value", value); // Log the value
 
-    const updateNodeParamValue = useCallback((newValue:string) =>{
-        
-        updateNodeData(nodeId,{
-            inputs :{
+    const updateNodeParamValue = useCallback((newValue: string) => {
+        updateNodeData(nodeId, {
+            inputs: {
                 ...node?.data.inputs,
-                [param.name] :newValue
+                [param.name]: newValue,
             }
-        })
-    },[nodeId,updateNodeData, param.name, node?.data.inputs])
+        });
+    }, [nodeId, updateNodeData, node?.data.inputs, param.name]);
 
-    switch(param.type){
+    switch (param.type) {
         case TaskParamType.STRING:
             return <StringParam param={param} value={value} updateNodeParamValue={updateNodeParamValue} />
         default:

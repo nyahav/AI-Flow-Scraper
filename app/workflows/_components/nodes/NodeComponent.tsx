@@ -5,11 +5,12 @@ import NodeHeader from "./NodeHeader";
 import { AppNodeData } from "@/types/appNode";
 import { TaskRegistry } from "@/lib/workflow/task/registry";
 import { NodeInput, NodeInputs } from "./NodeInputs";
-import { map } from "zod";
+
 
 const NodeComponent = memo((props: NodeProps) => {
     const nodeData = props.data as AppNodeData
     const task = TaskRegistry[nodeData.type]
+    console.log("NodeComponent - nodeId:", props.id)
     return <NodeCard nodeId={props.id} isSelected={!!props.selected}>
         <NodeHeader taskType={nodeData.type} />
         <NodeInputs>
