@@ -1,26 +1,48 @@
-import { AppNode } from "@/types/appNode";
+import { AppNode, AppNodeMissingInputs } from "@/types/appNode";
 import { WorkflowExecutionPlan, WorkflowExecutionPlanPhase } from "@/types/workflow";
 import { Edge, getIncomers } from "@xyflow/react";
 import { TaskRegistry } from "./task/registry";
 import { error } from "console";
 
+
+export enum FlowToExecutionPlanValidationError {
+    "NO_ENTRY_POINT",
+    "INVALID_INPUTS"
+}
 type FlowToExecutionPlanType = {
     executionPlan?: WorkflowExecutionPlan
+    error?: {
+        type:FlowToExecutionPlanValidationError;
+        invalidElements?: AppNodeMissingInputs
+    }
 }
 
 export function FlowToExecutionPlan(nodes: AppNode[], edges: Edge[]): FlowToExecutionPlanType {
 
     const entryPoint = nodes.find(node => TaskRegistry[node.data.type].isEntryPoint)
     if (!entryPoint) {
-        throw new Error("TODO:HANDLE THIS ERROR")
+        return{
+            error:{
+                type: FlowToExecutionPlanValidationError.NO_ENTRY_POINT
+            }
+        }
     }
+    const inputsWithErrors:AppNodeMissingInputs[]=[]
     const planned = new Set<string>()
+    const invalidInputs = getInvalidInputs(entryPoint,edges,planned)
+    if(invalidInputs.length>0){
+        inputsWithErrors.push({
+            nodeId: entryPoint.id,
+            inputs: invalidInputs
+        })
+    }
     const executionPlan: WorkflowExecutionPlan = [{
         phase: 1,
         nodes: [entryPoint],
     },
-    ]
-    for (let phase = 2; phase <= nodes.length || planned.size < nodes.length; phase++) {
+    ];
+    planned.add(entryPoint.id)
+    for (let phase = 2; phase <= nodes.length && planned.size < nodes.length; phase++) {
         const nextPhase: WorkflowExecutionPlanPhase = { phase, nodes: [] }
         for (const currentNode of nodes) {
             if (planned.has(currentNode.id)) {
@@ -33,13 +55,19 @@ export function FlowToExecutionPlan(nodes: AppNode[], edges: Edge[]): FlowToExec
                 if (incomers.every(incomer => planned.has(incomer.id))) {
                     //meaning incomer have invalid input meaning workflow is invalid
                     console.error("Invalid inputs", currentNode.id, invalidInputs);
-                    throw new Error("TODOD")
+                    inputsWithErrors.push({
+                        nodeId: currentNode.id,
+                        inputs: invalidInputs
+                    })
                 } else {
                     continue
                 }
             }
             nextPhase.nodes.push(currentNode)
-            planned.add(currentNode.id)
+            
+        }
+        for(const node of nextPhase.nodes){
+            planned.add(node.id)
         }
         executionPlan.push(nextPhase)
     }
