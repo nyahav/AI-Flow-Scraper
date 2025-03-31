@@ -38,5 +38,5 @@ export async function CreateWorkFlow(form: createWorkflowSchemaType){
     if(!result){
         throw new Error("failed to create workflow")
     }
-    redirect(`workflow/editor/${result.id}`)
+    redirect(`workflows/editor/${result.id}`)
 }
