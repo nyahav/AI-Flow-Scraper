@@ -1,12 +1,24 @@
 "use client"
 
+import { RunWorkflow } from '@/actions/workflows/runWorkflow'
 import useExecutionPlan from '@/components/hooks/useExecutionPlan'
 import { Button } from '@/components/ui/button'
+import { useMutation } from '@tanstack/react-query'
 import { PlayIcon } from 'lucide-react'
 import React from 'react'
+import { toast } from 'sonner'
 
 function ExecuteBtn({workflowId}:{workflowId:string}) {
     const generate = useExecutionPlan()
+    const mutation =useMutation({
+      mutationFn: RunWorkflow,
+      onSuccess:() => {
+        toast.success("Execution started",{id: "flow-execution"})
+      },
+      onError:() => {
+        toast.error("Something went wrong",{id: "flow-execution"})
+      }
+    })
   return (
     <Button variant={"outline"} className='flex items-center gap-2' onClick={() => {
         const plan =generate()

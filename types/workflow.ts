@@ -18,8 +18,6 @@ export type WorkFlowTask ={
     credits: number
 }
 
-
-
 export type WorkflowExecutionPlanPhase= {
     phase :number
     nodes : AppNode[]

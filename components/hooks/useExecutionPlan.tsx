@@ -32,8 +32,9 @@ const useExecutionPlan = () => {
             handleError(error)
             return null;
         }
+        clearErrors()
         return executionPlan
-    }, [toObject])
+    }, [toObject,handleError,clearErrors])
     return generateExecutionPlan
 }
 
