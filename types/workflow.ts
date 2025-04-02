@@ -8,8 +8,8 @@ export enum WorkFlowStatus {
     ARCHIVED = "ARCHIVED"
 }
 
-export type WorkFlowTask ={
-    label:string
+export type WorkFlowTask = {
+    label: string
     icon: React.FC<LucideProps>
     type: TaskType
     isEntryPoint?: boolean
@@ -18,8 +18,26 @@ export type WorkFlowTask ={
     credits: number
 }
 
-export type WorkflowExecutionPlanPhase= {
-    phase :number
-    nodes : AppNode[]
+export type WorkflowExecutionPlanPhase = {
+    phase: number
+    nodes: AppNode[]
 }
 export type WorkflowExecutionPlan = WorkflowExecutionPlanPhase[]
+
+export enum WorkflowExecutionStatus {
+    PENDING = "PENDING",
+    RUNNING = "RUNNING",
+    COMPLETED = "COMPLETED",
+    FAILED = "FAILED"
+}
+export enum WorkflowExecutionTrigger {
+    MANUAL = "MANUAL"
+}
+export enum ExecutionPhaseStatus {
+    CREATED = "CREATED",
+    PENDING = "PENDING",
+    RUNNING = "RUNNING",
+    COMPLETED = "COMPLETED",
+    FAILED = "FAILED"
+}
+
