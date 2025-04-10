@@ -34,7 +34,7 @@ async function ExecutionViewerWrapper({ executionId }: { executionId: string }) 
         return <div>Not found</div>
     }
     return (
-    <ExecutionViewer execution={workflowExection}/>
+    <ExecutionViewer initialData={workflowExection}/>
     )
 }
 
