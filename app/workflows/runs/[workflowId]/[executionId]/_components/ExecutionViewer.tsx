@@ -22,7 +22,13 @@ export function ExecutionViewer({ initialData }: { initialData: ExecutionData })
         queryKey: ["execution", initialData?.id],
         initialData,
         queryFn: () => GetWorkflowExecutionWithPhases(initialData!.id),
-        refetchInterval: (q) => q.state.data?.status === WorkflowExecutionStatus.RUNNING ? 1000 : false,
+        refetchInterval: (q) => {
+            const status = q.state.data?.status
+            if (status === WorkflowExecutionStatus.RUNNING) return 1000; // every 1 sec
+            if (status === WorkflowExecutionStatus.COMPLETED && !q.state.data?.completedAt) return 1000; // still wait for completedAt
+            return false;
+        }
+    
     })
     const phaseDetails = useQuery({
         queryKey: ["phaseDetails", selectedPhase],
