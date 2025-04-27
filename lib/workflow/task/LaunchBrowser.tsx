@@ -15,7 +15,7 @@ export const LaunchBrowserTask ={
         helperText: "eg: https://www.google.com",
         required : true,
         hideHandle: true,
-    }],
+    }] as const,
     outputs :[
         {name : "Web page",type :TaskParamType.BROWSER_INSTANCE}
     ],
