@@ -2,7 +2,11 @@
 import { TaskType } from "@/types/task";
 import { LaunchBrowserExecutor } from "./LaunchBrowserExecutor";
 import { PageToHtmlExecutor } from "./PageToHtmlExecutor";
+import { WorkFlowTask } from "@/types/workflow";
+import { ExecutionEnvironment } from "@/types/executor";
 
+
+type ExecutionFn<T extends WorkFlowTask> = (environment:ExecutionEnvironment<T>) => Promise<boolean>;
 
 type RegistryType = {
     [k in TaskType]:any

@@ -41,6 +41,7 @@ model WorkFlowExecution {
   createAt DateTime @default(now())
   startedAt DateTime?
   completedAt DateTime?
+  definition String @default("")
 
   creditsConsume Int @default(0)
 
