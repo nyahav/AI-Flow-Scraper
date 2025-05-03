@@ -10,10 +10,12 @@ import { ExecutorRegistry } from "./Executor/registry"
 import { Environment, ExecutionEnvironment } from "@/types/executor"
 import { create } from "domain"
 import { TaskParamType } from "@/types/task"
-import { count } from "console"
+import { count, log, time } from "console"
 import { get } from "http"
 import { Browser, Page } from "puppeteer"
 import { Edge } from "@xyflow/react"
+import { LogColletor } from "@/types/log"
+import { createLogCollector } from "../log"
 
 export async function ExecuteWorkflow(executionId: string) {
 
@@ -33,12 +35,13 @@ export async function ExecuteWorkflow(executionId: string) {
     await initWorkflowExecution(executionId, execution.workflow.id)
     //initialize phases status
     await initPhasesStatus(execution)
+    
 
     let creditsConsume = 0
     let executioinFailed = false
     for(const phase of execution.phases) {
         const phaseExecution = await executeWorkflowPhase(phase,environment,edges)
-        if(!phaseExecution.success){ {
+        if(!phaseExecution.success) {
             executioinFailed = true
             break
         }
@@ -50,7 +53,7 @@ export async function ExecuteWorkflow(executionId: string) {
     await cleanupEnvironment(environment)
    // revalidatePath("/workflows/runs")
 }
-}
+
 
 async function initWorkflowExecution(executionId: string, workflowId: string) {
     await prisma.workFlowExecution.update({
@@ -117,9 +120,10 @@ async function finalizeWorkflowExecution(executionId: string, workflowId: string
   })
 }
 
-async function executeWorkflowPhase(phase: ExecutionPhase,environment:Environment,edges:Edge[] ) {
+async function executeWorkflowPhase(phase: ExecutionPhase,environment:Environment,edges:Edge[])  {
     const startedAt = new Date()
     const node = JSON.parse(phase.node) as AppNode
+    const logColletor = createLogCollector()
     setupEnvironmentForPhase(node,environment,edges)
     //update phase status 
     await prisma.executionPhase.update({
@@ -137,14 +141,14 @@ async function executeWorkflowPhase(phase: ExecutionPhase,environment:Environmen
     //TODO: decrement credits from user account
 
    
-    const success = await executePhase(phase,node,environment)
+    const success = await executePhase(phase,node,environment,logColletor)
     const outputs = environment.phases[node.id].outputs
-    await finalizePhase(phase.id, success,outputs)
+    await finalizePhase(phase.id, success,outputs,logColletor)
     return {success}
 }
 
 
-async function finalizePhase(phaseId: string, success: boolean,outputs:any) {
+async function finalizePhase(phaseId: string, success: boolean,outputs:any,logColletor:LogColletor) {
     const finalStatus = success ? ExecutionPhaseStatus.COMPLETED : ExecutionPhaseStatus.FAILED
     await prisma.executionPhase.update({
         where: {
@@ -154,18 +158,28 @@ async function finalizePhase(phaseId: string, success: boolean,outputs:any) {
             status: finalStatus,
             completeAt: new Date(),
             outputs: JSON.stringify(outputs),
+            logs:{
+                createMany:{
+                    data: logColletor.getAll().map((log) => ({
+                        message: log.message,
+                        timestamp: log.timestamp,
+                        logLevel: log.level,
+                    }))
+                    
+                }
+            },
         },
     })
 }
 
-async function executePhase(phase: ExecutionPhase, node: AppNode, environment:Environment): Promise<boolean> {
+async function executePhase(phase: ExecutionPhase, node: AppNode, environment:Environment,logColletor:LogColletor): Promise<boolean> {
 
     const runFn = ExecutorRegistry[node.data.type]
     if(!runFn){
         return false
     }
 
-    const executionEnvironment :ExecutionEnvironment<any>= createExecutionEnvironment(node,environment)
+    const executionEnvironment :ExecutionEnvironment<any>= createExecutionEnvironment(node,environment,logColletor)
     return await runFn(executionEnvironment);
 }
 function setupEnvironmentForPhase(node: AppNode, environment: Environment, edges:Edge[]) {
@@ -199,7 +213,7 @@ function setupEnvironmentForPhase(node: AppNode, environment: Environment, edges
     }
 }
 
-function createExecutionEnvironment(node: AppNode, environment: Environment):ExecutionEnvironment<any> {
+function createExecutionEnvironment(node: AppNode, environment: Environment,LogColletor:LogColletor):ExecutionEnvironment<any> {
     return {
         getInput:(name: string) => environment.phases[node.id]?.inputs[name], 
         setOutput:(name: string, value: string) => environment.phases[node.id].outputs[name] = value,
@@ -208,9 +222,8 @@ function createExecutionEnvironment(node: AppNode, environment: Environment):Exe
             environment.browser = browser
         },
         getPage: () => environment.page,
-        setPage: (page:Page) => {
-            environment.page = page
-        },
+        setPage: (page:Page) => {environment.page = page },
+        log:LogColletor,
     }
 }
 
