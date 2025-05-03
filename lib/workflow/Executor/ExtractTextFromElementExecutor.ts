@@ -1,21 +1,25 @@
-import { waitFor } from "@/lib/helper/waitFor"
-import { Environment, ExecutionEnvironment } from "@/types/executor"
-import puppeteer from "puppeteer"
+
+import {  ExecutionEnvironment } from "@/types/executor"
+import * as cheerio from "cheerio"
 import { LaunchBrowserTask } from "../task/LaunchBrowser"
+import { PageToHtmlTask } from "../task/PageToHtml"
+import { ExtractTextFromElementTask } from "../task/ExtractTextFromHtml"
 
-export async function LaunchBrowserExecutor(enviroment: ExecutionEnvironment<typeof LaunchBrowserTask>): Promise<boolean> {
+export async function ExtractTextFromElementExecutor(environment: ExecutionEnvironment<typeof ExtractTextFromElementTask>): Promise<boolean> {
     try {
-        const websiteUrl = enviroment.getInput("Website Url")
-        console.log("Launching browser for url: ", websiteUrl)
-        const browser = await puppeteer.launch({
-            headless: false,
-        })
-        const page = await browser.newPage();
-
-        await page.goto("https://www.google.com");
-        await waitFor(3000);
-        await browser.close();
-        await browser.close()
+        const selector = environment.getInput("Selector")
+        if(!selector) {
+            environment.log.error("Selector is not provided")
+            return false
+        }
+        const html=environment.getInput("Html")
+        if(!html) {return false}
+        const $ = cheerio.load(html)
+        const element = $(selector)
+        if (!element) { environment.log.error("Element not found"); return false}
+        const extractedText = $.text(element)
+        if(!extractedText) { environment.log.error("No text found in element"); return false}
+        environment.setOutput("Extracted text", extractedText)
         return true
     }
     catch (e) {

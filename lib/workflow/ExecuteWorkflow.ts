@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma"
 import { init } from "next/dist/compiled/webpack/webpack"
 import { ExecutionPhaseStatus, WorkflowExecutionStatus } from "@/types/workflow"
 import { waitFor } from "../helper/waitFor"
-import { executionPhase } from "@prisma/client"
+import { ExecutionPhase } from "@prisma/client"
 import { AppNode } from "@/types/appNode"
 import { TaskRegistry } from "./task/registry"
 import { ExecutorRegistry } from "./Executor/registry"
@@ -13,6 +13,7 @@ import { TaskParamType } from "@/types/task"
 import { count } from "console"
 import { get } from "http"
 import { Browser, Page } from "puppeteer"
+import { Edge } from "@xyflow/react"
 
 export async function ExecuteWorkflow(executionId: string) {
 
@@ -25,7 +26,7 @@ export async function ExecuteWorkflow(executionId: string) {
     if (!execution) {
         throw new Error("Execution not found")
     }
-
+    const edges =JSON.parse(execution.definition).edges as Edge[]
     //setup the execution environment
     const environment: Environment = { phases : {}}
     //initialize workflow execution
@@ -36,7 +37,7 @@ export async function ExecuteWorkflow(executionId: string) {
     let creditsConsume = 0
     let executioinFailed = false
     for(const phase of execution.phases) {
-        const phaseExecution = await executeWorkflowPhase(phase,environment)
+        const phaseExecution = await executeWorkflowPhase(phase,environment,edges)
         if(!phaseExecution.success){ {
             executioinFailed = true
             break
@@ -116,10 +117,10 @@ async function finalizeWorkflowExecution(executionId: string, workflowId: string
   })
 }
 
-async function executeWorkflowPhase(phase: executionPhase,environment:Environment) {
+async function executeWorkflowPhase(phase: ExecutionPhase,environment:Environment,edges:Edge[] ) {
     const startedAt = new Date()
     const node = JSON.parse(phase.node) as AppNode
-    setupEnvironmentForPhase(node,environment)
+    setupEnvironmentForPhase(node,environment,edges)
     //update phase status 
     await prisma.executionPhase.update({
         where: {
@@ -157,7 +158,7 @@ async function finalizePhase(phaseId: string, success: boolean,outputs:any) {
     })
 }
 
-async function executePhase(phase: executionPhase, node: AppNode, environment:Environment): Promise<boolean> {
+async function executePhase(phase: ExecutionPhase, node: AppNode, environment:Environment): Promise<boolean> {
 
     const runFn = ExecutorRegistry[node.data.type]
     if(!runFn){
@@ -167,7 +168,7 @@ async function executePhase(phase: executionPhase, node: AppNode, environment:En
     const executionEnvironment :ExecutionEnvironment<any>= createExecutionEnvironment(node,environment)
     return await runFn(executionEnvironment);
 }
-function setupEnvironmentForPhase(node: AppNode, environment: Environment) {
+function setupEnvironmentForPhase(node: AppNode, environment: Environment, edges:Edge[]) {
 
     environment.phases[node.id] = {
         inputs:{},
@@ -183,7 +184,18 @@ function setupEnvironmentForPhase(node: AppNode, environment: Environment) {
         }
 
         //Get input value from outpous in the 
-
+        const connectedEdge = edges.find((edge) => edge.target === node.id && edge.targetHandle === input.name)
+        if(!connectedEdge){
+            console.error('missing edge for input',input.name,"Node id",node.id)
+            continue
+        }
+        let outputValue;
+        if (connectedEdge.source && connectedEdge.sourceHandle) {
+            outputValue = environment.phases[connectedEdge.source]?.outputs[connectedEdge.sourceHandle];
+        } else {
+            console.error('Invalid edge source or sourceHandle', connectedEdge);
+        }
+        environment.phases[node.id].inputs[input.name] = outputValue ?? "";
     }
 }
 
