@@ -11,7 +11,7 @@ import { ExecutionPhaseStatus, WorkflowExecutionStatus, WorkFlowStatus } from '@
 import { useQuery } from '@tanstack/react-query'
 import { formatDistanceToNow } from 'date-fns'
 import { CalendarIcon, CircleDashedIcon, ClockIcon, CoinsIcon, Loader2Icon, LucideIcon, WorkflowIcon } from 'lucide-react'
-import React, { ReactNode, use, useState } from 'react'
+import React, { ReactNode, use, useEffect, useState } from 'react'
 import {Card,CardContent,CardDescription,CardFooter,CardHeader,CardTitle} from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { ExecutionLog } from '@prisma/client'
@@ -42,6 +42,23 @@ export function ExecutionViewer({ initialData }: { initialData: ExecutionData })
         queryFn: () => GetWorkflowPhaseDetails(selectedPhase!),
     })
     const isRunning = query.data?.status === WorkflowExecutionStatus.RUNNING
+
+    useEffect(() => {
+        //while running without selected phase, set the first phase as selected
+        const phases = query.data?.phases || []
+        if(isRunning){
+            //select the last executed phase
+            const phaseToSelect =phases.toSorted((a,b) => 
+                a.startedAt!>b.startedAt! ? -1 : 1 )[0]
+            setSelectedPhase(phaseToSelect.id)
+            return
+        }
+        const phaseToSelect =phases.toSorted((a,b) => 
+            a.completeAt!>b.completeAt! ? -1 : 1 )[0]
+        setSelectedPhase(phaseToSelect.id)
+        return
+    },[query.data?.phases,isRunning,setSelectedPhase]);
+
     const duration = DatesToDurationString(query.data?.completedAt, query.data?.startedAt)
     const creditsConsumed = GetPhasesTotalCost(query.data?.phases || [])
     return (
